@@ -1,2 +1,3 @@
 # ServiceNow-EfficientGlideRecord
-https://go.snc.guru/egr
+
+Full article and documentation at: https://go.snc.guru/egr
