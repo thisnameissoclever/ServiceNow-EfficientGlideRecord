@@ -6,7 +6,7 @@
  * @author
  *  Tim Woodruff (https://TimothyWoodruff.com)
  *  SN Pro Tips (https://snprotips.com)
- * @version 1.0.3
+ * @version 1.0.4
  * @class
  *
  * @license
@@ -82,7 +82,10 @@ class EfficientGlideRecord {
 		
 		this._config = {
 			'table_to_query' : tableName,
-			'fields_to_get' : [],
+			'fields_to_get' : [{
+				'name' : 'sys_id',
+				'get_display_value' : false
+			}],
 			'record_limit' : 0,
 			'order_by_field' : '',
 			'order_by_desc_field' : '',
@@ -137,6 +140,25 @@ class EfficientGlideRecord {
 	 * });
 	 */
 	addField(fieldName, getDisplayValue) {
+		var i;
+		if (!fieldName) {
+			console.error(
+				'Attempted to call .addField() without a field name specified. ' +
+				'Cannot add a blank field to the query.'
+			);
+			return this;
+		}
+		for (i = 0; i < this._config.fields_to_get.length; i++) {
+			if (this._config.fields_to_get[i].name === fieldName) {
+				//If the field name already exists, then bail.
+				console.warn(
+					'Attempted to add field with name ' + fieldName + ' to ' +
+					'EfficientGlideRecord query, but that field already exists. ' +
+					'Cannot add the same field twice.'
+				);
+				return this;
+			}
+		}
 		this._config.fields_to_get.push({
 			'name' : fieldName,
 			'get_display_value' : (!!getDisplayValue)
@@ -638,19 +660,20 @@ class EfficientGlideRecord {
 			return false;
 		}
 		
-		if (
-			!this._config.fields_to_get ||
-			this._config.fields_to_get.length < 1
-		) {
-			console.error(
-				'EfficientGlideRecord not ready to query. No fields were specified to ' +
-				'retrieve. \nPlease specify which fields you want to retrieve from the ' +
-				'GlideRecord object using .addField(fieldName, getDisplayValue). ' +
+		if (this._config.fields_to_get.length <= 1) {
+			console.warn(
+				'EfficientGlideRecord: No fields other than sys_id were specified ' +
+				'to retrieve. \nYou can specify which fields you want to retrieve from ' +
+				'the GlideRecord object using .addField(fieldName, getDisplayValue). ' +
 				'Afterward, in your callback, you can use .getValue(fieldName). If ' +
-				'you set getDisplayValue to true, you can also use ' +
-				'.getDisplayValue(fieldName).'
+				'you set getDisplayValue to true in .addField(), you can also use ' +
+				'.getDisplayValue(fieldName).\n' +
+				'Without fields to retrieve specified using .addField(), each record ' +
+				'will be returned with only a sys_id. \n' +
+				'This will not prevent you from performing your query, unless ' +
+				'something has gone terribly wrong.'
 			);
-			return false;
+			//Not returning false, because this is not a blocking error.
 		}
 		
 		//Warn if queries AND encoded queries are both empty and limit is unspecified

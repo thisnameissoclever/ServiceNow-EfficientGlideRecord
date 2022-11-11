@@ -2,7 +2,7 @@
 	Server-side client-callable Script Include.
 	See related article for full usage instructions and API documentation:
 	https://go.snc.guru/egr
-	@version 1.0.3
+	@version 1.0.4
 */
 var ClientGlideRecordAJAX = Class.create();
 ClientGlideRecordAJAX.prototype = Object.extendsObject(AbstractAjaxProcessor, {
@@ -191,8 +191,112 @@ ClientGlideRecordAJAX.prototype = Object.extendsObject(AbstractAjaxProcessor, {
 		return true;
 	},
 	
+	/*_getRequestedRecordData : function(grRecord, config) {
+		var iFieldToGet, iFieldChain, grRefRecord, workingFieldName, fieldType,
+			splitFieldNames, canReadField, isFieldValid, fieldName, fieldElement,
+			fieldValue, fieldDisplayValue, getDisplay, invalidRefChain, hasNextDotWalk,
+			brokenRefChain;
+		var recordData = {
+			'_config' : config,
+			'_table_name' : grRecord.getTableName(),
+			'_field_values' : {}
+		};
+		
+		for (iFieldToGet = 0; iFieldToGet < recordData._config.fields_to_get.length; iFieldToGet++) {
+			//Set initial values to false in order to prevent previous loop
+			// from impacting this one.
+			invalidRefChain = false;
+			brokenRefChain = false;
+			
+			fieldName = recordData._config.fields_to_get[iFieldToGet].name;
+			getDisplay = !!recordData._config.fields_to_get[iFieldToGet].get_display_value;
+			splitFieldNames = fieldName.split('.');
+			
+			//Set initial value of grRefRecord for use in the for-loop below.
+			grRefRecord = grRecord;
+			
+			//Check if the field is valid and readable.
+			//For dot-walked fields, do this for each step.
+			for (iFieldChain = 0; iFieldChain < splitFieldNames.length; iFieldChain++) {
+				workingFieldName = splitFieldNames[iFieldChain];
+				hasNextDotWalk = (iFieldChain + 1) < splitFieldNames.length;
+				
+				isFieldValid = grRefRecord.isValidField(workingFieldName);
+				canReadField = (isFieldValid && grRefRecord[workingFieldName].canRead());
+				
+				if (!isFieldValid || !canReadField) {
+					break;
+				}
+				
+				fieldType = grRefRecord.getElement().getED().getInternalType();
+				//If field type is NOT reference, but we're attempting to dot-walk through it
+				// as indicated by there being additional elements in the field chain, then
+				// log an error and set a flag to abort getting this field value.
+				if (fieldType !== 'reference' && hasNextDotWalk) {
+					invalidRefChain = true;
+					gs.error(
+						'Attempted to get dot-walked field ' + fieldName +
+						' from table ' + grRecord.getTableName() + ', but one of the ' +
+						'fields in this dot-walk chain is not valid. Aborting getting ' +
+						'this field value.'
+					);
+					break;
+				}
+				//
+				
+				//If there's more in this dot-walk chain and the field IS a reference field,
+				// then get the next reference object.
+				if (hasNextDotWalk && fieldType === 'reference') {
+					if (grRefRecord[workingFieldName].nil()) {
+						brokenRefChain = true;
+						break;
+					}
+					
+					grRefRecord = grRefRecord[workingFieldName].getRefRecord();
+				}
+			}
+			
+			if (invalidRefChain) {
+				//If the requested field is dot-walked through an invalid field,
+				// continue to next loop.
+				continue;
+			}
+			if (brokenRefChain) {
+				recordData._field_values[fieldName] = {
+					'name' : fieldName,
+					'value' : '',
+					'display_value' : '',
+					'can_read' : canReadField
+				};
+				//Continue to next loop after adding blank field value due to broken ref chain.
+				continue;
+			}
+			//Using .getElement() to handle dot-walked fields.
+			fieldElement = grRecord.getElement(fieldName);
+			//todo: update to use fieldElement instead of GR
+			
+			//Must get canReadField in this way and use it to see if we can see the field values,
+			// cause otherwise GlideRecordSecure freaks alll the way out.
+			//canReadField = (grRecord.isValidField(fieldName.split('.')[0]) && grRecord[fieldName].canRead());
+			fieldValue = canReadField ? (grRecord.getElement(fieldName).toString() || '') : '';
+			fieldDisplayValue = (getDisplay && canReadField && fieldValue) ?
+				(grRecord[fieldName].getDisplayValue() || '') : ('');
+			
+			//Retrieve value (and display value if requested)
+			recordData._field_values[fieldName] = {
+				'name' : fieldName,
+				'value' : fieldValue,
+				'display_value' : fieldDisplayValue,
+				//If false, may be caused by ACL restriction, or by invalid field
+				'can_read' : canReadField
+			};
+		}
+		
+		return recordData;
+	},*/
+	
 	_getRequestedRecordData : function(grRecord, config) {
-		var i, canReadField, fieldName, fieldValue, fieldDisplayValue, getDisplay;
+		var i, canReadField, fieldName, fieldValue, fieldDisplayValue, getDisplay, fieldElement, isFieldValid;
 		var recordData = {
 			'_config' : config,
 			'_table_name' : grRecord.getTableName(),
@@ -204,10 +308,16 @@ ClientGlideRecordAJAX.prototype = Object.extendsObject(AbstractAjaxProcessor, {
 			getDisplay = !!recordData._config.fields_to_get[i].get_display_value;
 			//Must get canReadField in this way and use it to see if we can see the field values,
 			// cause otherwise GlideRecordSecure freaks alll the way out.
-			canReadField = (grRecord.isValidField(fieldName) && grRecord[fieldName].canRead());
-			fieldValue = canReadField ? (grRecord.getValue(fieldName) || '') : '';
+			isFieldValid = grRecord.isValidField(fieldName.split('.')[0]);
+			fieldElement = isFieldValid && grRecord.getElement(fieldName);
+			
+			canReadField = (isFieldValid &&
+				grRecord[(fieldName.split('.')[0])].canRead()) &&
+				fieldElement.canRead();
+			
+			fieldValue = canReadField ? (fieldElement.toString() || '') : '';
 			fieldDisplayValue = (getDisplay && canReadField && fieldValue) ?
-				(grRecord[fieldName].getDisplayValue() || '') : ('');
+				(fieldElement.getDisplayValue() || '') : ('');
 			
 			//Retrieve value (and display value if requested)
 			recordData._field_values[fieldName] = {
