@@ -1,7 +1,7 @@
 /*
 	Server-side client-callable Script Include.
 	See related article for full usage instructions and API documentation:
-	https://go.snc.guru/egr
+	https://egr.snc.guru
 	@version 1.0.4
 */
 var ClientGlideRecordAJAX = Class.create();
