@@ -4,8 +4,8 @@
  *  to the Theme that you're using on any Service Portals used by your organization.
  * @description See related article for full usage instructions and API
  *  documentation:
- * https://go.snc.guru/egr
- * @classdesc https://go.snc.guru/egr
+ * https://egr.snc.guru
+ * @classdesc https://egr.snc.guru
  * @author
  *  Tim Woodruff (https://TimothyWoodruff.com)
  *  SN Pro Tips (https://snprotips.com)
@@ -52,9 +52,9 @@ class EfficientGlideRecordPortal {
 	 *  efficient interface to query records asynchronously without all the additional overhead
 	 *  related to information that you don't need.
 	 *
-	 * Additional documentation can be found on the SN Pro Tips blog, at https://go.snc.guru/egr
+	 * Additional documentation can be found on the SN Pro Tips blog, at https://egr.snc.guru
 	 * NOTE: For info on performing async queries in onSubmit Client Scripts, see
-	 *  https://go.snc.guru/onsubmit
+	 *  https://onsubmit.snc.guru
 	 *
 	 * @param {String} tableName - The name of the table on which to execute your GlideRecord query
 	 * @returns {EfficientGlideRecord}
@@ -437,7 +437,7 @@ class EfficientGlideRecordPortal {
 			//Make this work in Portal because SN is bad at documentation and consistency
 			if (typeof eGR === 'undefined') {
 				if (typeof this === 'undefined' || this === null) {
-					throw new Error('EfficientGlideRecord ran into a problem. Neither eGR nor the "this" scope are defined. I have no idea how this happened. Better go find Tim and yell at him: https://go.snc.guru/egr');
+					throw new Error('EfficientGlideRecord ran into a problem. Neither eGR nor the "this" scope are defined. I have no idea how this happened. Better go find Tim and yell at him: https://egr.snc.guru');
 				} else {
 					//If Service Portal blocked access to/nullified the "this" object FOR
 					// SOME FREAKIN REASON, grab it from the binding we did in .query().
